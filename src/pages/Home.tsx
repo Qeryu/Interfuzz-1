@@ -151,17 +151,17 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-3">
               {[
                 { 
-                  title: '🔷 核心 1：HPG 异构程序图', 
+                  title: <><span className="text-blue-400">◆</span> 核心 1：HPG 异构程序图</>, 
                   desc: '将程序抽象为多类型有向图 HPG(𝒫) = (V, 𝒯, E, ℰ)，统一表示继承、接口、嵌套、泛型、引用等五种类间结构，支持结构化分析与操作。',
                   highlight: true
                 },
                 { 
-                  title: '🔶 核心 2：跨类结构变异算子', 
+                  title: <><span className="text-yellow-400">◆</span> 核心 2：跨类结构变异算子</>, 
                   desc: '在 HPG 上执行图级原子操作（添加/删除节点或边、修改属性），系统化生成具有复杂类间关系的测试用例，保证语法与语义正确性。',
                   highlight: true
                 },
                 { 
-                  title: '🔸 核心 3：图复杂度引导', 
+                  title: <><span className="text-red-400">◆</span> 核心 3：图复杂度引导</>, 
                   desc: '基于节点度数与边类型多样性评估结构复杂度，引导变异过程优先探索"关系多样且连接丰富"的程序形态，高效触发编译器缺陷。',
                   highlight: true
                 },
