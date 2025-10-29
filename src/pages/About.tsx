@@ -17,7 +17,7 @@ export default function About() {
             <Users size={26} className="text-white" />
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-semibold text-white mb-4">研究团队</h2>
+            <h2 className="text-2xl font-semibold text-white mb-4">项目团队</h2>
           </div>
         </div>
 
@@ -27,7 +27,7 @@ export default function About() {
               name: "文明",
               role: "指导老师 · 副教授",
               photo: "/images/team/wenming-shenghuozhao.jpg",
-              focus: ["软件安全", "编译器测试", "程序分析"],
+              description: "华中科技大学网络空间安全学院副教授、博士生导师，领导ARTS³研究小组，聚焦系统软件安全前沿研究。主要研究方向包括代码大模型安全、软件测试与分析、程序缺陷漏洞的检测、定位与修复等。",
               homepage: "",
               email: "",
             },
@@ -35,7 +35,7 @@ export default function About() {
               name: "邱士煜",
               role: "队长 · 2025级博士生",
               photo: "/images/team/qiushiyu-shenghuozhao.png",
-              focus: ["Java 编译器测试", "程序分析", "自动化测试框架"],
+              description: "华中科技大学网络空间安全学院2025级博士生，主要研究方向为编译器测试、JVM测试、JIT编译器测试。InterFuzz工具项目负责人，致力于提升Java编译器的可靠性与安全性。",
               homepage: "",
               email: "",
             },
@@ -43,7 +43,7 @@ export default function About() {
               name: "赖昕",
               role: "队员 · 2025级硕士生",
               photo: "/images/team/laixin-shenghuozhao.png",
-              focus: ["编译器测试", "测试用例生成", "语义变异与差分分析"],
+              description: "华中科技大学网络空间安全学院2025级硕士生，主要研究方向为编译器测试与程序分析，参与InterFuzz工具的开发与优化，致力于提升编译器的测试覆盖率和缺陷检测能力。",
               homepage: "",
               email: "",
             },
@@ -51,7 +51,7 @@ export default function About() {
               name: "吴若仪",
               role: "队员 · 2023级本科生",
               photo: "/images/team/wuruoyi-shenghuozhao.jpg",
-              focus: ["可视化展示", "数据可视化", "交互式系统设计"],
+              description: "华中科技大学网络空间安全学院2023级本科生，参与InterFuzz项目，专注于编译器测试与自动化测试技术的研究，致力于提升Java编译器的稳定性和性能。",
               homepage: "",
               email: "",
             },
@@ -86,17 +86,10 @@ export default function About() {
                   <div className="text-base text-white/70 mt-1">{m.role}</div>
                 </div>
               </div>
-              {m.focus && m.focus.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {m.focus.map((f) => (
-                    <span
-                      key={f}
-                      className="px-2.5 py-1 rounded-md bg-white/5 text-xs text-white/80 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
-                    >
-                      {f}
-                    </span>
-                  ))}
-                </div>
+              {m.description && (
+                <p className="mt-4 text-white/80 text-sm leading-relaxed text-left">
+                  {m.description}
+                </p>
               )}
               {(m.homepage || m.email) && (
                 <div className="mt-4 flex items-center gap-3 text-base">
