@@ -598,10 +598,9 @@ const GraphViewer = forwardRef<GraphViewerHandle, Props>(({ dataUrl, height = 0.
 
       // (legend drawing removed here; using HTML GraphLegend overlay instead)
 
-      // apply an initial zoom-in roughly equal to three wheel "up" steps
+      // apply an initial zoom-in (50% of original three wheel "up" steps)
       if (!didInitialZoom.current && zoomCtl.current) {
-        // use a single scaleBy with factor ~ 1.2^3 to avoid transition interruptions
-        zoomCtl.current.scaleBy(Math.pow(1.2, 3))
+        zoomCtl.current.scaleBy(0.7)
         didInitialZoom.current = true
       }
 

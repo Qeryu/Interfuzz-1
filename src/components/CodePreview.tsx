@@ -25,66 +25,118 @@ function useIsLightTheme(): boolean {
   return isLight
 }
 
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-}
-
-function highlightJavaLine(raw: string, isLight: boolean): string {
-  // 简易高亮：先转义，再按字符串/注解/数字/关键字分层处理
-  let line = escapeHtml(raw)
-
-  // 单行注释优先处理
-  const commentIdx = line.indexOf('//')
-  let comment = ''
-  if (commentIdx >= 0) {
-    comment = line.slice(commentIdx)
-    line = line.slice(0, commentIdx)
-  }
-
-  // 根据主题使用不同的颜色
+// Java 语法高亮组件（使用 React 元素，避免 HTML 字符串问题）
+function HighlightedJavaLine({ line, isLight }: { line: string; isLight: boolean }) {
   const colors = isLight ? {
     string: 'text-red-700',
     annotation: 'text-purple-700',
     number: 'text-emerald-700',
     keyword: 'text-blue-700',
-    comment: 'text-green-600'
+    comment: 'text-green-600',
+    normal: 'text-slate-800'
   } : {
     string: 'text-emerald-300',
     annotation: 'text-pink-300',
     number: 'text-amber-300',
     keyword: 'text-sky-300',
-    comment: 'text-white/40'
+    comment: 'text-white/40',
+    normal: 'text-white/90'
   }
 
-  // 字符串
-  line = line.replace(/"([^"\\]|\\.)*"/g, (m) => `<span class="${colors.string}">${m}</span>`)
-  // 注解
-  line = line.replace(/@[A-Za-z_][A-Za-z0-9_]*/g, (m) => `<span class="${colors.annotation}">${m}</span>`)
-  // 数字
-  line = line.replace(/\b\d+\b/g, (m) => `<span class="${colors.number}">${m}</span>`)
-  // 关键字（边界匹配）
-  const keywords = [
-    'public','class','static','void','int','String','new','return','if','else','for','while','do','switch','case','break','continue','interface','implements','extends','package','import','boolean','char','long','float','double','null','true','false','final','private','protected'
-  ]
-  const kwRegex = new RegExp(`\\b(${keywords.join('|')})\\b`, 'g')
-  line = line.replace(kwRegex, `<span class="${colors.keyword}">$1</span>`)
+  const keywords = new Set([
+    'public','class','static','void','int','String','new','return','if','else','for','while','do',
+    'switch','case','break','continue','interface','implements','extends','package','import',
+    'boolean','char','long','float','double','null','true','false','final','private','protected',
+    'try','catch','throw','throws','byte','short','this','super','abstract','synchronized'
+  ])
 
-  if (comment) {
-    line += `<span class="${colors.comment}">${comment}</span>`
+  // 检查是否是注释行
+  if (line.trimStart().startsWith('//')) {
+    return <span className={colors.comment}>{line}</span>
   }
-  return line
+
+  // 分词并高亮
+  const tokens: React.ReactNode[] = []
+  let i = 0
+  let key = 0
+
+  while (i < line.length) {
+    // 跳过空白
+    if (/\s/.test(line[i])) {
+      const start = i
+      while (i < line.length && /\s/.test(line[i])) i++
+      tokens.push(line.substring(start, i))
+      continue
+    }
+
+    // 字符串字面量
+    if (line[i] === '"') {
+      const start = i++
+      while (i < line.length && line[i] !== '"') {
+        if (line[i] === '\\') i += 2
+        else i++
+      }
+      if (i < line.length) i++ // 跳过结束引号
+      tokens.push(<span key={key++} className={colors.string}>{line.substring(start, i)}</span>)
+      continue
+    }
+
+    // 单行注释
+    if (line[i] === '/' && line[i + 1] === '/') {
+      tokens.push(<span key={key++} className={colors.comment}>{line.substring(i)}</span>)
+      break
+    }
+
+    // 注解
+    if (line[i] === '@') {
+      const start = i++
+      while (i < line.length && /[A-Za-z0-9_]/.test(line[i])) i++
+      tokens.push(<span key={key++} className={colors.annotation}>{line.substring(start, i)}</span>)
+      continue
+    }
+
+    // 数字（包括负号）
+    if (/[-\d]/.test(line[i]) && (line[i] === '-' || /\d/.test(line[i]))) {
+      const start = i
+      if (line[i] === '-') i++
+      while (i < line.length && /[\d.]/.test(line[i])) i++
+      // 检查后缀 L/F/l/f
+      if (i < line.length && /[LlFf]/.test(line[i])) i++
+      const numStr = line.substring(start, i)
+      // 确保是有效数字（不是单独的减号）
+      if (numStr !== '-' && /[-\d]/.test(numStr[numStr.length - 1])) {
+        tokens.push(<span key={key++} className={colors.number}>{numStr}</span>)
+        continue
+      }
+      // 否则回退
+      i = start + 1
+      tokens.push(line[start])
+      continue
+    }
+
+    // 标识符或关键字
+    if (/[A-Za-z_]/.test(line[i])) {
+      const start = i
+      while (i < line.length && /[A-Za-z0-9_]/.test(line[i])) i++
+      const word = line.substring(start, i)
+      if (keywords.has(word)) {
+        tokens.push(<span key={key++} className={colors.keyword}>{word}</span>)
+      } else {
+        tokens.push(word)
+      }
+      continue
+    }
+
+    // 其他字符
+    tokens.push(line[i++])
+  }
+
+  return <>{tokens}</>
 }
 
 export default function CodePreview({ code, language = 'java', filename, maxHeight = 224 }: CodePreviewProps) {
   const isLight = useIsLightTheme()
   const lines = useMemo(() => code.replace(/\r\n?/g, '\n').split('\n'), [code])
-  const highlighted = useMemo(() => {
-    if (language === 'java') return lines.map(l => highlightJavaLine(l, isLight))
-    return lines.map(escapeHtml)
-  }, [language, lines, isLight])
 
   function copyAll() {
     navigator.clipboard?.writeText(code).catch(() => {})
@@ -103,13 +155,17 @@ export default function CodePreview({ code, language = 'java', filename, maxHeig
       <div className="text-[12px] leading-relaxed font-mono overflow-auto" style={{ maxHeight }}>
         <table className="w-full table-fixed">
           <tbody>
-            {highlighted.map((html, i) => (
+            {lines.map((line, i) => (
               <tr key={i} className="align-top">
                 <td className={`select-none pr-3 text-right w-10 ${isLight ? 'text-slate-400' : 'text-white/30'}`}>
                   {i + 1}
                 </td>
                 <td className={`whitespace-pre-wrap ${isLight ? 'text-slate-800' : 'text-white/90'}`}>
-                  <span dangerouslySetInnerHTML={{ __html: html }} />
+                  {language === 'java' ? (
+                    <HighlightedJavaLine line={line} isLight={isLight} />
+                  ) : (
+                    line
+                  )}
                 </td>
               </tr>
             ))}

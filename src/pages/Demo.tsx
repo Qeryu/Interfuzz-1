@@ -345,8 +345,26 @@ export default function Demo() {
           }
         } catch {}
       }
-      // 不同阶段不同停顿模拟耗时
-      await delay( i === 0 ? 800 : i === progressSteps.length - 1 ? 600 : 900 )
+      
+      // 为每个步骤单独设置延迟时间（单位：毫秒）
+      let stepDelay = 1500 // 默认值
+      const stepName = progressSteps[i]
+      
+      if (stepName.includes('Seed 导入')) {
+        stepDelay = 1500  // Seed 导入: 1.5秒
+      } else if (stepName.includes('结构分析')) {
+        stepDelay = 2000  // 结构分析: 2秒
+      } else if (stepName.includes('初始 HPG')) {
+        stepDelay = 2500  // 初始 HPG: 2.5秒
+      } else if (stepName.includes('Inter-Class Mutator') || stepName.includes('INTER-CLASS MUTATOR')) {
+        stepDelay = 15000 // Inter-Class Mutator: 15秒
+      } else if (stepName.includes('变异后 HPG')) {
+        stepDelay = 2500  // 变异后 HPG: 2.5秒
+      } else if (stepName.includes('测试程序生成')) {
+        stepDelay = 2000  // 测试程序生成: 2秒
+      }
+      
+      await delay(stepDelay)
     }
     setAnalysisRunning(false)
     setAnalysisDone(true)
@@ -722,7 +740,7 @@ export default function Demo() {
                         aria-label="滚动查看图可视化"
                       >
                         <span className="inline-flex items-center gap-1">
-                          <span className="drop-shadow-sm">可视化变异过程</span>
+                          <span className="drop-shadow-sm">可视化初始种子与有丰富跨类结构的种子对应的异构程序图（HPG）</span>
                           <span className="animate-bounce inline-flex text-cyan-300">
                             {/* 更精致的双层箭头 */}
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
